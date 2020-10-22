@@ -9,7 +9,7 @@ const io = socketio(server);
 app.use(express.static(path.join(__dirname, "public")));
 //@utils
 const formatMessage = require("./utils/messages.js");
-const {getCurrentUser,userJoin} =require("./utils/users")
+const {getCurrentUser,userJoin,getRoomUsers,userLeave} =require("./utils/users")
 
 const botName = "Wuphf Bot";
 //Run when client is connected
@@ -18,24 +18,37 @@ io.on("connection", (socket) => {
     const user=userJoin(socket.id,username,room)
     socket.join(user.room)
     //welcoming current user
-    socket.emit("message", formatMessage(botName, "Welcome to chatCord"));
+    socket.emit("message", formatMessage(botName, "Welcome to Wuphf"));
 
     //broadcast when a user connects(emits to everyone except the user who is connecting)
     socket.broadcast.to(user.room).emit(
       "message",
       formatMessage(botName, `${user.username} has join the chat`)
     );
+    //send users and room info
+    io.to(user.room).emit('roomUsers',{
+        room:user.room,
+        users:getRoomUsers(user.room)
+    })
   });
 
   //listen for chat message
   socket.on("chatMessage", (msg) => {
-    console.log(msg);
-    io.emit("message", formatMessage("USER", msg));
+    const user=getCurrentUser(socket.id);
+    io.to(user.room).emit("message", formatMessage(user.username, msg));
   });
   //runs when client disconnects
   socket.on("disconnect", () => {
     //let everyone know that the user has left the chat
-    io.emit("message", formatMessage(botName, "A user has left the chat"));
+    const user=userLeave(socket.id)
+    if(user){
+        io.to(user.room).emit("message", formatMessage(botName, `${user.username} has left the chat`));
+        //send users and room info
+        io.to(user.room).emit('roomUsers',{
+            room:user.room,
+            users:getRoomUsers(user.room)
+        })
+    }
   });
 });
 
