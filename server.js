@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
 
   });
   socket.on('typing', (data)=>{
-    console.log("typing",data)
+    // console.log("typing",data)
     const user=getCurrentUser(socket.id);
     socket.broadcast.to(user.room).emit('display', data)
   })

@@ -67,7 +67,7 @@ function outputUsers(users) {
 //   socket.emit("typing", false);
 // }
 
-  $('#msg').keypress((e) => {
+  $('#msg').keyup((e) => {
     if (e.which != 13) {
       typing = true;
       socket.emit("typing", { user: username, typing: true });
@@ -76,9 +76,6 @@ function outputUsers(users) {
     typing = false;
     socket.emit("typing", { user: username, typing: false});
     }
-    $('#msg').keydown((e) => {
-        socket.emit("typing", { user: username, typing: false});
-    })
 
   //code explained later
   socket.on("display", (data) => {
