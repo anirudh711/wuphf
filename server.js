@@ -30,8 +30,13 @@ io.on("connection", (socket) => {
         room:user.room,
         users:getRoomUsers(user.room)
     })
-  });
 
+  });
+  socket.on('typing', (data)=>{
+    console.log("typing",data)
+    const user=getCurrentUser(socket.id);
+    socket.broadcast.to(user.room).emit('display', data)
+  })
   //listen for chat message
   socket.on("chatMessage", (msg) => {
     const user=getCurrentUser(socket.id);
